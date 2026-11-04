@@ -34,3 +34,11 @@ VALIDATE $? "Copying mongo.repo"
 dnf install mongodb-org -y &>> $LOG_FILE
 VALIDATE $? "Installing MongoDB" 
 
+systemctl enable --now mongod &>> $LOG_FILE
+VALIDATE $? "Starting and Enabling MongoDB"
+
+sed -i 's/127.0.0.0/0.0.0.0/g' /etc/mongod.conf
+VALIDATE $? "Updating MongoDB config file"
+
+systemctl restart mongod &>> $LOG_FILE
+VALIDATE $? "Restarting MongoDB"

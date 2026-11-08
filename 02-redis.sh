@@ -1,0 +1,43 @@
+#!/bin/bash
+LOGS_FOLDER=/home/ec2-user/var/log/roboshop
+sudo mkdir -p $LOGS_FOLDER
+sudo chown ec2-user:ec2-user $LOGS_FOLDER
+sudo chmod 755 $LOGS_FOLDER
+LOG_FILE="$LOGS_FOLDER/$0.log"
+USERID=$(id-u)
+R="\e[31m"
+G="\e[32m"
+Y="\e[33m"
+N="\e[0m"
+TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+if [ $USERID -ne 0 ]; then
+    echo -e " $TIMESTAMP [ERROR] $R Run this script as a root user or sudo user $N" | tee -a $LOG_FILE
+    exit 1
+fi
+
+VALIDATE() {
+    if [ $1 -ne 0 ]; then
+        echo -e "$TIMESTAMP [ERROR] $R $2 IS...FAILED $N" | tee -a $LOG_FILE
+        exit 1
+    else
+        echo -e "$TIMESTAMP [INFO] $G $2 IS...SUCCESS $N" | tee -a $LOG_FILE
+    fi
+}
+
+dnf module disable redis -y | tee -a $LOG_FILE
+VALIDATE $? "Disabling Redis Module"
+
+dnf module enable redis:7 -y | tee -a $LOG_FILE
+VALIDATE $? "Enabling Redis Module"
+
+dnf install redis -y | tee -a $LOG_FILE
+VALIDATE $? "Installing Redis"
+
+sed -i 's/127.0.0.0/0.0.0.0/g' /etc/redis/redis.conf | tee -a $LOG_FILE
+VALIDATE $? "Updating Redis Config File"
+
+systemctl enable redis | tee -a $LOG_FILE
+VALIDATE $? "Enabling Redis Service"
+
+systemctl restart redis | tee -a $LOG_FILE
+VALIDATE $? "Restarting Redis Service"

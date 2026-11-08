@@ -1,8 +1,8 @@
 #!/bin/bash
 
-AMI_ID=ami-0055977a6e828a4f4
-ZONE_ID=Z0970256W74FS2R5N49F
-DOMAIN_NAME=prudhvi.store
+AMI_ID="ami-0055977a6e828a4f4"
+ZONE_ID="Z0970256W74FS2R5N49F"
+DOMAIN_NAME="prudhvi.store"
 
 for instance in $@
 do
